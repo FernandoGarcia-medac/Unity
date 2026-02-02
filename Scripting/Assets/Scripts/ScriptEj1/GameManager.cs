@@ -5,39 +5,59 @@ using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
-    //VARIABLES ESTATICAS (Compartidas por los scripts)
     public int puntos = 0;
     public int vidas = 3;
-    //Referencias a los textos de la UI
+    
     public Text textoPuntos;
     public Text textoVidas;
     public GameObject panelGameOver;
+    public GameObject panelVictoria;
+
+    public AudioSource sonidoMoneda;
+    public AudioSource sonidoBomba;
 
     public void sumarPuntos(int cantidad)
     {
         puntos += cantidad;
-        Debug.Log(puntos);
         textoPuntos.text = "Puntos: " + puntos;
+        
+        if (sonidoMoneda != null) sonidoMoneda.Play();
+
+        if (puntos >= 120)
+        {
+            ganarJuego();
+        }
     }
 
     public void perderVida(int cantidad)
-{
-    vidas -= cantidad; // Restamos primero
-
-    if (vidas <= 0)
     {
-        vidas = 0; 
-        textoVidas.text = "Vidas: " + vidas;
-        panelGameOver.SetActive(true);
-        Debug.Log("¡GAME OVER! Has muerto.");
+        vidas -= cantidad;
         
-    }
-    else
-    {
-        Debug.Log("Te quedan " + vidas + " vidas.");
-        textoVidas.text = "Vidas: " + vidas;
-    }
-}
+        if (sonidoBomba != null) sonidoBomba.Play();
 
-    
+        if (vidas <= 0)
+        {
+            vidas = 0;
+            textoVidas.text = "Vidas: " + vidas;
+            panelGameOver.SetActive(true);
+            Time.timeScale = 0f; 
+        }
+        else
+        {
+            textoVidas.text = "Vidas: " + vidas;
+        }
+    }
+
+    void ganarJuego()
+    {
+        panelVictoria.SetActive(true);
+        Time.timeScale = 0f; 
+        Debug.Log("¡Has ganado!");
+    }
+
+    public void IrAlInicio() 
+    {
+        Time.timeScale = 1f; 
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Inicio");
+    }
 }

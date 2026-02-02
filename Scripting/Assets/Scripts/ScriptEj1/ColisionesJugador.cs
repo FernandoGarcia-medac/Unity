@@ -1,34 +1,32 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class ColisionesJugador : MonoBehaviour
-{
-    //Referencia al GameManager para poder avisarle
+public class ColisionesJugador : MonoBehaviour {
     public GameManager gameManager;
 
-    //1. OntriggerEnter2D para objetos fantasma que atravesamos (monedas)
-    void OnTriggerEnter2D(Collider2D objetoTocado)
-    {
-        //Comprobamos si el objeto con el que hemos chocado es una moneda
-        if (objetoTocado.gameObject.CompareTag("Moneda"))
-        {
-            //Sumamos puntos al GameManager
+    void Start() {
+        // Busca el GameManager automáticamente al empezar
+        gameManager = FindObjectOfType<GameManager>();
+    }
+
+    void OnTriggerEnter2D(Collider2D objetoTocado) {
+        if (gameManager == null) return;
+
+        // Detección por etiquetas (Tags) para monedas y bombas
+        if (objetoTocado.CompareTag("Moneda")) {
             gameManager.sumarPuntos(10);
-
-            //Destruimos la moneda
             Destroy(objetoTocado.gameObject);
-        }else if (objetoTocado.CompareTag("bomba"))
-        {
+        } 
+        else if (objetoTocado.CompareTag("bomba")) {
             gameManager.perderVida(1);
-
             Destroy(objetoTocado.gameObject);
         }
-        
+        // Detección por nombre exacto para el zombie
+        else if (objetoTocado.gameObject.name == "zombie") { 
+            gameManager.perderVida(1);
+            
+            // Te empuja un poco a la izquierda para que no te quite todas las vidas seguidas
+            
+            Debug.Log("¡Cuidado! El zombie te ha quitado una vida.");
+        }
     }
-    
-
-
- 
-   
 }
