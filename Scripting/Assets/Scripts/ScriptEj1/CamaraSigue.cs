@@ -4,14 +4,12 @@ using UnityEngine;
 
 public class CamaraSigue : MonoBehaviour
 {
-    public Transform jugador; // Arrastrar al jugador aqui
+    public Transform jugador; 
 
-    // Usamos LateUpdate para mover la camara DESPUES de que el jugador se haya movido
     void LateUpdate()
     {
         if (jugador != null)
         {
-            // Copiamos la x y la y del jugador, pero mantenemos la z de la camara
             transform.position = new Vector3(jugador.position.x, jugador.position.y, transform.position.z);
             
         } 
@@ -23,7 +21,6 @@ public class CamaraSigue : MonoBehaviour
         
     }
 
-    // Update is called once per frame
     void Update()
     {
         

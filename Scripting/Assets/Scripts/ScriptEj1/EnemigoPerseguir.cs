@@ -24,7 +24,6 @@ public class EnemigoPerseguir : MonoBehaviour
 
     void OnCollisionEnter2D(Collision2D objetoTocado)
     {
-        // CORRECCIÓN: Se accede a gameObject y luego al método .CompareTag()
         if (objetoTocado.gameObject.CompareTag("jugador1"))
         {
             if (migameManager != null) 
