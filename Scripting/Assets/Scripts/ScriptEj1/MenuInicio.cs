@@ -12,5 +12,10 @@ public class MenuInicio : MonoBehaviour
         SceneManager.LoadScene("Juego1");
     }
 
+    public void SalirDelJuego()
+    {
+        Debug.Log("Saliendo del juego..."); 
+        Application.Quit(); 
+    }
 
 }
