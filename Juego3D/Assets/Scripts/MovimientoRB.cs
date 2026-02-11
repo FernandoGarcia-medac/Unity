@@ -2,75 +2,90 @@ using UnityEngine;
 
 public class MovimientoRB : MonoBehaviour
 {
-    [Header("Ajustes")]
-    public float velocidad = 5f;
+    [Header("Ajustes de Movimiento")]
+    public float velocidadCaminar = 7f;
+    public float velocidadCorrer = 12f;
+    public float aceleracion = 10f;
+    public float fuerzaSalto = 10f;
     public float sensibilidad = 2f;
-    public float fuerzaSalto = 5f;
 
     [Header("Referencias")]
     public Camera camaraJugador;
 
     private Rigidbody rb;
     private float rotacionX = 0f;
-    private bool puedeSaltar;
-
+    private bool estaEnSuelo;
+    private float velocidadActualTarget;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         
         rb.freezeRotation = true; 
+        rb.interpolation = RigidbodyInterpolation.Interpolate; 
+        rb.collisionDetectionMode = CollisionDetectionMode.Continuous; 
         
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
 
-    
-
     void Update()
     {
-        // --- 1. ROTACIÓN ---
+        float mouseX = Input.GetAxis("Mouse X") * sensibilidad;
         float mouseY = Input.GetAxis("Mouse Y") * sensibilidad;
+
         rotacionX -= mouseY;
-        rotacionX = Mathf.Clamp(rotacionX, -90f, 90f); // Tope
+        rotacionX = Mathf.Clamp(rotacionX, -90f, 90f);
         
         if (camaraJugador != null)
-        {
             camaraJugador.transform.localRotation = Quaternion.Euler(rotacionX, 0f, 0f);
-        }
 
-        float mouseX = Input.GetAxis("Mouse X") * sensibilidad;
         transform.Rotate(Vector3.up * mouseX);
 
-
-        // --- 2. MOVIMIENTO ---
-        float movX = Input.GetAxis("Horizontal");
-        float movZ = Input.GetAxis("Vertical");
-        
-        Vector3 movimiento = transform.right * movX + transform.forward * movZ;
-        
-        Vector3 velocidadFinal = movimiento * velocidad;
-        velocidadFinal.y = rb.velocity.y; 
-        
-        rb.velocity = velocidadFinal;
-
-
-        // --- 3. SALTO ---
-        if (Input.GetKeyDown(KeyCode.Space) && puedeSaltar)
+        if (Input.GetKey(KeyCode.LeftShift) && estaEnSuelo)
         {
-            rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z); 
+            velocidadActualTarget = velocidadCorrer;
+        }
+        else
+        {
+            velocidadActualTarget = velocidadCaminar;
+        }
+
+        if (Input.GetButtonDown("Jump") && estaEnSuelo)
+        {
+            rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z); 
             rb.AddForce(Vector3.up * fuerzaSalto, ForceMode.Impulse);
-            puedeSaltar = false;
+            estaEnSuelo = false;
         }
     }
 
-    void OnCollisionStay(Collision collision)
+    void FixedUpdate()
     {
-        puedeSaltar = true;
+        float movX = Input.GetAxisRaw("Horizontal");
+        float movZ = Input.GetAxisRaw("Vertical");
+
+        Vector3 direccion = (transform.right * movX + transform.forward * movZ).normalized;
+        Vector3 velocidadObjetivo = direccion * velocidadActualTarget;
+
+        Vector3 velActualHorizontal = new Vector3(rb.velocity.x, 0, rb.velocity.z);
+        Vector3 fuerzaMov = (velocidadObjetivo - velActualHorizontal) * aceleracion;
+
+        rb.AddForce(fuerzaMov, ForceMode.Acceleration);
     }
-    
-    void OnCollisionExit(Collision collision)
+
+    void OnCollisionStay(Collision col)
     {
-        puedeSaltar = false;
+        foreach (ContactPoint contacto in col.contacts)
+        {
+            if (contacto.normal.y > 0.6f) 
+            {
+                estaEnSuelo = true;
+            }
+        }
+    }
+
+    void OnCollisionExit(Collision col)
+    {
+        estaEnSuelo = false;
     }
 }
